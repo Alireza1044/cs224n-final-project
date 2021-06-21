@@ -43,6 +43,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--max-epochs', type=int, default=10)
+    parser.add_argument('--char', type=str, default="michael")
     parser.add_argument('--batch-size', type=int, default=256)
     parser.add_argument('--sequence-length', type=int, default=4)
     args = parser.parse_args()
@@ -52,7 +53,8 @@ if __name__ == '__main__':
     else:
         device = torch.device('cpu')
     print(f"Training is using: \n \t {device}")
-    dataset = Dataset(args, device)
+    print()
+    dataset = Dataset(args, args.char, device)
     model = Model(dataset, device)
     model.to(device)
 

@@ -30,13 +30,14 @@ def predict(dataset, model, text, next_words=100):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', type=str, default="hi")
+    parser.add_argument('--char', type=str, default="michael")
     parser.add_argument('--length', type=int, default=5)
     parser.add_argument('--sequence-length', type=int, default=5)
     args = parser.parse_args()
     device = torch.device('cpu')
 
-    print(f"Using: \n \t {device}")
-    dataset = Dataset(args, device)
+    print(f"Using: {device}")
+    dataset = Dataset(args, args.char, device)
     model = Model(dataset, device)
     model.load_state_dict(torch.load(os.path.join("tmp", "model.pth")))
-    print(predict(dataset, model, text=args.input), args.length)
+    print(' '.join(predict(dataset, model, text=args.input, next_words=args.length)))

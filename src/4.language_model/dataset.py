@@ -2,15 +2,18 @@ import torch
 import pandas as pd
 from collections import Counter
 
+
 class Dataset(torch.utils.data.Dataset):
     def __init__(
-        self,
-        args,
-        device,
+            self,
+            args,
+            char,
+            device,
     ):
         self.args = args
         self.words = self.load_words()
         self.device = device
+        self.char = char
         self.uniq_words = self.get_uniq_words()
 
         self.index_to_word = {index: word for index, word in enumerate(self.uniq_words)}
@@ -19,7 +22,7 @@ class Dataset(torch.utils.data.Dataset):
         self.words_indexes = [self.word_to_index[w] for w in self.words]
 
     def load_words(self):
-        with open('michael.txt', 'r') as f:
+        with open(f'{self.char}.txt', 'r') as f:
             train_df = [d.strip() for d in f.readlines()]
         return train_df
 
@@ -32,6 +35,6 @@ class Dataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         return (
-            torch.tensor(self.words_indexes[index:index+self.args.sequence_length], device=self.device),
-            torch.tensor(self.words_indexes[index+1:index+self.args.sequence_length+1], device=self.device),
+            torch.tensor(self.words_indexes[index:index + self.args.sequence_length], device=self.device),
+            torch.tensor(self.words_indexes[index + 1:index + self.args.sequence_length + 1], device=self.device),
         )
