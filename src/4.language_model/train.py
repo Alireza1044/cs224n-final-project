@@ -21,6 +21,7 @@ def train(dataset, model, device, args):
         state_c.to(device)
         with tqdm(dataloader, unit="batch") as tepoch:
             for batch, (x, y) in enumerate(tepoch):
+                tepoch.set_description(f"Epoch {epoch + 1}")
                 optimizer.zero_grad()
                 x.to(device)
                 y.to(device)
@@ -57,4 +58,3 @@ model.to(device)
 
 train(dataset, model, device, args)
 torch.save(model.state_dict(), "/tmp")
-print(predict(dataset, model, text='Knock knock. Whos there?'))

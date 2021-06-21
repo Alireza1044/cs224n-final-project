@@ -42,3 +42,4 @@ if __name__ == '__main__':
     model = Model(dataset, device)
     model.load_state_dict(torch.load('/tmp'))
     model.to(device)
+    print(predict(dataset, model, text='the office'))
