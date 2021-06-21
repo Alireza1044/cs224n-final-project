@@ -30,6 +30,7 @@ def predict(dataset, model, text, next_words=100):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', type=str, default="hi")
+    parser.add_argument('--length', type=int, default=5)
     parser.add_argument('--sequence-length', type=int, default=5)
     args = parser.parse_args()
     device = torch.device('cpu')
@@ -38,4 +39,4 @@ if __name__ == '__main__':
     dataset = Dataset(args, device)
     model = Model(dataset, device)
     model.load_state_dict(torch.load(os.path.join("tmp", "model.pth")))
-    print(predict(dataset, model, text=args.input), args.sequence_length)
+    print(predict(dataset, model, text=args.input), args.length)
