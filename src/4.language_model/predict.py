@@ -1,3 +1,4 @@
+import os
 import argparse
 import torch
 import numpy as np
@@ -28,18 +29,13 @@ def predict(dataset, model, text, next_words=100):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--max-epochs', type=int, default=10)
-    parser.add_argument('--batch-size', type=int, default=256)
-    parser.add_argument('--sequence-length', type=int, default=4)
+    parser.add_argument('--input', type=str, default="hi")
+    parser.add_argument('--sequence-length', type=int, default=5)
     args = parser.parse_args()
-    device = None
-    if torch.cuda.is_available():
-        device = torch.device('cuda')
-    else:
-        device = torch.device('cpu')
-    print(f"Training is using: \n \t {device}")
+    device = torch.device('cpu')
+
+    print(f"Using: \n \t {device}")
     dataset = Dataset(args, device)
     model = Model(dataset, device)
-    model.load_state_dict(torch.load('/tmp'))
-    model.to(device)
-    print(predict(dataset, model, text='the office'))
+    model.load_state_dict(torch.load(os.path.join("tmp", "model.pth")))
+    print(predict(dataset, model, text=args.input), args.sequence_length)

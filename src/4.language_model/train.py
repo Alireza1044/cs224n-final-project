@@ -61,4 +61,4 @@ if __name__ == '__main__':
     save_folder = os.path.join(save_path)
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
-    torch.save(model.state_dict(), save_folder)
+    torch.save(model.state_dict(), os.path.join(save_folder, "model.pth"))
