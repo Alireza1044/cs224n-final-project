@@ -1,6 +1,7 @@
 import argparse
 import torch
 import numpy as np
+import os
 from tqdm import tqdm
 from torch import nn, optim
 from torch.utils.data import DataLoader
@@ -38,23 +39,26 @@ def train(dataset, model, device, args):
                 # print({ 'epoch': epoch, 'batch': batch, 'loss': loss.item() })
 
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
 
+    parser.add_argument('--max-epochs', type=int, default=10)
+    parser.add_argument('--batch-size', type=int, default=256)
+    parser.add_argument('--sequence-length', type=int, default=4)
+    args = parser.parse_args()
+    device = None
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
+    print(f"Training is using: \n \t {device}")
+    dataset = Dataset(args, device)
+    model = Model(dataset, device)
+    model.to(device)
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--max-epochs', type=int, default=10)
-parser.add_argument('--batch-size', type=int, default=256)
-parser.add_argument('--sequence-length', type=int, default=4)
-args = parser.parse_args()
-device = None
-if torch.cuda.is_available():
-    device = torch.device('cuda')
-else:
-    device = torch.device('cpu')
-print(f"Training is using: \n \t {device}")
-dataset = Dataset(args, device)
-model = Model(dataset, device)
-model.to(device)
-
-train(dataset, model, device, args)
-torch.save(model.state_dict(), "/tmp")
+    train(dataset, model, device, args)
+    save_path = "tmp"
+    save_folder = os.path.join(save_path)
+    if not os.path.exists(save_folder):
+        os.makedirs(save_folder)
+    torch.save(model.state_dict(), save_folder)
