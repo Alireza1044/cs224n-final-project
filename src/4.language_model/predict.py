@@ -37,7 +37,7 @@ if __name__ == '__main__':
     device = torch.device('cpu')
 
     print(f"Using: {device}")
-    dataset = Dataset(args, args.char, device)
+    dataset = Dataset(args, device)
     model = Model(dataset, device)
-    model.load_state_dict(torch.load(os.path.join("tmp", "model.pth")))
+    model.load_state_dict(torch.load(os.path.join("tmp", f"{args.char}.pth")))
     print(' '.join(predict(dataset, model, text=args.input, next_words=args.length)))

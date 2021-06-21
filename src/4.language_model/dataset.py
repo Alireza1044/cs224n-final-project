@@ -7,13 +7,12 @@ class Dataset(torch.utils.data.Dataset):
     def __init__(
             self,
             args,
-            char,
             device,
     ):
         self.args = args
-        self.words = self.load_words()
         self.device = device
-        self.char = char
+        self.char = args.char
+        self.words = self.load_words()
         self.uniq_words = self.get_uniq_words()
 
         self.index_to_word = {index: word for index, word in enumerate(self.uniq_words)}
@@ -24,7 +23,8 @@ class Dataset(torch.utils.data.Dataset):
     def load_words(self):
         with open(f'{self.char}.txt', 'r') as f:
             train_df = [d.strip() for d in f.readlines()]
-        return train_df
+        temp = ' '.join(train_df)
+        return temp.split()
 
     def get_uniq_words(self):
         word_counts = Counter(self.words)

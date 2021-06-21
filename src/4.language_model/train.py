@@ -54,7 +54,7 @@ if __name__ == '__main__':
         device = torch.device('cpu')
     print(f"Training is using: \n \t {device}")
     print()
-    dataset = Dataset(args, args.char, device)
+    dataset = Dataset(args, device)
     model = Model(dataset, device)
     model.to(device)
 
@@ -63,4 +63,4 @@ if __name__ == '__main__':
     save_folder = os.path.join(save_path)
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
-    torch.save(model.state_dict(), os.path.join(save_folder, "model.pth"))
+    torch.save(model.state_dict(), os.path.join(save_folder, f"{args.char}.pth"))
