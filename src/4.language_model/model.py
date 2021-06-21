@@ -2,11 +2,12 @@ import torch
 from torch import nn
 
 class Model(nn.Module):
-    def __init__(self, dataset):
+    def __init__(self, dataset, device):
         super(Model, self).__init__()
         self.lstm_size = 128
         self.embedding_dim = 128
         self.num_layers = 3
+        self.device = device
 
         n_vocab = len(dataset.uniq_words)
         self.embedding = nn.Embedding(
@@ -28,5 +29,5 @@ class Model(nn.Module):
         return logits, state
 
     def init_state(self, sequence_length):
-        return (torch.zeros(self.num_layers, sequence_length, self.lstm_size),
-                torch.zeros(self.num_layers, sequence_length, self.lstm_size))
+        return (torch.zeros(self.num_layers, sequence_length, self.lstm_size, device=self.device),
+                torch.zeros(self.num_layers, sequence_length, self.lstm_size, device=self.device))
