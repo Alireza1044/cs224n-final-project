@@ -7,9 +7,7 @@ import os
 import random
 
 class StanfordSentiment:
-    def __init__(self, character, path=None, tablesize = 1000000):
-        if not path:
-            path = "../../data/clean/cleaned_broken_sentences"
+    def __init__(self, character, path, tablesize = 1000000):
         self.character = character
         self.path = path
         self.tablesize = tablesize
@@ -51,7 +49,7 @@ class StanfordSentiment:
             return self._sentences
 
         sentences = []
-        with open(self.path + f"/{self.character}.txt", "r") as f:
+        with open(self.path, "r") as f:
             first = True
             for line in f:
 

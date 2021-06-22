@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Save parameters every a few SGD iterations as fail-safe
-SAVE_PARAMS_EVERY = 5000
+SAVE_PARAMS_EVERY = 20000
 
 import pickle
 import glob
@@ -9,20 +9,21 @@ import random
 import numpy as np
 import os.path as op
 
-def load_saved_params():
+
+def load_saved_params(path):
     """
     A helper function that loads previously saved parameters and resets
     iteration start.
     """
-    st = 0
+    st = 40000
     for f in glob.glob("saved_params_*.npy"):
         iter = int(op.splitext(op.basename(f))[0].split("_")[2])
         if (iter > st):
             st = iter
 
     if st > 0:
-        params_file = "saved_params_%d.npy" % st
-        state_file = "saved_state_%d.pickle" % st
+        params_file = f"{path}.word2vec.npy"
+        state_file = f"{path}.word2vec.pickle"
         params = np.load(params_file)
         with open(state_file, "rb") as f:
             state = pickle.load(f)
@@ -31,14 +32,14 @@ def load_saved_params():
         return st, None, None
 
 
-def save_params(iter, params):
-    params_file = "saved_params_%d.npy" % iter
+def save_params(iter, path, params):
+    params_file = f"{path}.word2vec.npy"
     np.save(params_file, params)
-    with open("saved_state_%d.pickle" % iter, "wb") as f:
+    with open(f"{path}.word2vec.pickle", "wb") as f:
         pickle.dump(random.getstate(), f)
 
 
-def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
+def sgd(f, x0, step, iterations, path, postprocessing=None, useSaved=False,
         PRINT_EVERY=10):
     """ Stochastic Gradient Descent
 
@@ -64,7 +65,7 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
     ANNEAL_EVERY = 20000
 
     if useSaved:
-        start_iter, oldx, state = load_saved_params()
+        start_iter, oldx, state = load_saved_params(path)
         if start_iter > 0:
             x0 = oldx
             step *= 0.5 ** (start_iter / ANNEAL_EVERY)
@@ -98,8 +99,8 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
                 exploss = .95 * exploss + .05 * loss
             print("iter %d: %f" % (iter, exploss))
 
-        if iter % SAVE_PARAMS_EVERY == 0 and useSaved:
-            save_params(iter, x)
+        if iter % SAVE_PARAMS_EVERY == 0:
+            save_params(iter, path, x)
 
         if iter % ANNEAL_EVERY == 0:
             step *= 0.5

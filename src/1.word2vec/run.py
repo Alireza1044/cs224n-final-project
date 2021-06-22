@@ -8,8 +8,12 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import time
-import os
+import os, sys, inspect
 import argparse
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
 from src import config
 
 from word2vec import *
@@ -24,6 +28,8 @@ assert sys.version_info[1] >= 5
 # Reset the random seed to make sure that everyone gets the same results
 parser = argparse.ArgumentParser(description="1.word2vec arguments")
 parser.add_argument('--char', type=str, default="michael")
+parser.add_argument('-a', action="store_true")
+parser.add_argument('--predict', action="store_true")
 args = parser.parse_args()
 cls = args.char
 print(f"training for: {cls}")
@@ -41,7 +47,7 @@ C = 5
 # Reset the random seed to make sure that everyone gets the same results
 random.seed(31415)
 np.random.seed(9265)
-
+c = 'all' if args.a else args.char
 startTime = time.time()
 wordVectors = np.concatenate(
     ((np.random.rand(nWords, dimVectors) - 0.5) /
@@ -50,7 +56,7 @@ wordVectors = np.concatenate(
 wordVectors = sgd(
     lambda vec: word2vec_sgd_wrapper(skipgram, tokens, vec, dataset, C,
                                      negSamplingLossAndGradient),
-    wordVectors, 0.3, 40000, None, True, PRINT_EVERY=10)
+    wordVectors, 0.3, 40000, os.path.join("..", "..", config.model_save_path, f"{c}"), None, useSaved=args.predict, PRINT_EVERY=10)
 # Note that normalization is not called here. This is not a bug,
 # normalizing during training loses the notion of length.
 
@@ -61,4 +67,4 @@ print("training took %d seconds" % (time.time() - startTime))
 wordVectors = np.concatenate(
     (wordVectors[:nWords, :], wordVectors[nWords:, :]),
     axis=0)
-np.save(os.path.join(config.model_save_path, f"{cls}.word2vec.npy"))
+# np.save(os.path.join("..", "..", config.model_save_path, f"{cls}.word2vec.npy"), wordVectors)

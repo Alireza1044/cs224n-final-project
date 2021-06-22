@@ -1,13 +1,15 @@
 import argparse
 import torch
-from src import config
-import os
+import os, sys, inspect
 from tqdm import tqdm
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from model import Model
 from dataset import Dataset
-
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
+from src import config
 
 def train(dataset, model, device, args):
     model.train()

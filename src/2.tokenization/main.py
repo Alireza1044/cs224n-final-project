@@ -11,10 +11,10 @@ import config
 
 
 def load_data(char, flag):
-    with open(config.data_path('michael_train'), 'r') as f:
+    with open(config.data_path('michael_test'), 'r') as f:
         data = [d.strip() for d in f.readlines()]
 
-    with open(config.data_path('dwight_train'), 'r') as f:
+    with open(config.data_path('dwight_test'), 'r') as f:
         data2 = [d.strip() for d in f.readlines()]
 
     if flag:
@@ -31,24 +31,24 @@ if __name__ == '__main__':
     parser.add_argument('--predict', action='store_true')
     parser.add_argument('-f', '--whole-data', action='store_true')
     parser.add_argument('--char', type=str, default="michael")
-    parser.add_argument('--vocab-size', type=int, default=100)
+    parser.add_argument('--vocab-size', type=int, default=50)
     args = parser.parse_args()
     dataset = load_data(args.char, args.whole_data)
     if not args.predict:
         if args.whole_data:
-            files = f"{config.data_path('michael_test')},{config.data_path('dwight_test')}"
+            files = f"{config.data_path('michael_train')},{config.data_path('dwight_train')}"
         else:
-            files = config.data_path(f"{args.char}_test")
+            files = config.data_path(f"{args.char}_train")
         spm.SentencePieceTrainer.Train(
-            f"--input={files} --vocab_size={args.vocab_size} --model_prefix={os.path.join(config.model_save_path, 'tokenization')}")
+            f"--input={files} --vocab_size={args.vocab_size} --model_prefix={os.path.join(config.model_save_path, f'{args.char}.tokenization')} --model_type=unigram")
     else:
         spp = spm.SentencePieceProcessor()
-        spp.load(os.path.join(config.model_save_path, 'tokenization.model'))
+        spp.load(os.path.join(config.model_save_path, f'{args.char}.tokenization.model'))
         unk = 0
         count = 0
         for data in dataset:
             ids = spp.EncodeAsIds(data)
             count += len(ids)
-            unk += len([id for id in ids if ids == 0])
+            unk += len([id for id in ids if id == 0])
         print(count, unk)
         print(f"{(unk / float(count)) * 100}%")
