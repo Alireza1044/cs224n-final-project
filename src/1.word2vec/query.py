@@ -1,24 +1,24 @@
 import numpy as np
 import argparse
+import os
 from utils.treebank import StanfordSentiment
 import matplotlib.pyplot as plt
+from src import config
 
 parser = argparse.ArgumentParser(description="1.word2vec arguments")
-parser.add_argument("-c",
-                    type=int,
-                    help="Name of the class: 1.Michael 2.Dwight",
-                    choices=[1, 2],
-                    default=1)
+parser.add_argument("--char",
+                    type=str,
+                    default='michael')
 parser.add_argument("-w",
                     type=list,
-                    help="Query tto process, should be an array of words e.g. ['hello','goodbye']")
+                    help="Query to process, should be an array of words e.g. ['hello','goodbye']")
 args = parser.parse_args()
-cls = 'michael' if args.c == 1 else 'dwight'
+cls = args.char
 dataset = StanfordSentiment(character=cls)
 tokens = dataset.tokens()
 print(f"training for: {cls}")
 
-wordVectors = np.load(f"../../models/{cls}.1.word2vec.npy")
+wordVectors = np.load(os.path.join(config.model_save_path, f"{cls}.word2vec.npy"))
 
 visualizeWords = args.w
 
@@ -36,4 +36,4 @@ for i in range(len(visualizeWords)):
 plt.xlim((np.min(coord[:, 0]), np.max(coord[:, 0])))
 plt.ylim((np.min(coord[:, 1]), np.max(coord[:, 1])))
 
-plt.savefig(f"../../word_vectors_{cls}.png")
+plt.savefig(os.path.join(config.report_path, f"word_vectors_{cls}.png"))

@@ -8,7 +8,9 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import time
+import os
 import argparse
+from src import config
 
 from word2vec import *
 from sgd import *
@@ -21,13 +23,9 @@ assert sys.version_info[1] >= 5
 
 # Reset the random seed to make sure that everyone gets the same results
 parser = argparse.ArgumentParser(description="1.word2vec arguments")
-parser.add_argument("-c",
-                    type=int,
-                    help="Name of the class: 1.Michael 2.Dwight",
-                    choices=[1, 2],
-                    default=1)
+parser.add_argument('--char', type=str, default="michael")
 args = parser.parse_args()
-cls = 'michael' if args.c == 1 else 'dwight'
+cls = args.char
 print(f"training for: {cls}")
 random.seed(314)
 dataset = StanfordSentiment(character=cls)
@@ -63,7 +61,4 @@ print("training took %d seconds" % (time.time() - startTime))
 wordVectors = np.concatenate(
     (wordVectors[:nWords, :], wordVectors[nWords:, :]),
     axis=0)
-
-np.save(f"../../models/{cls}.1.word2vec.npy")
-
-
+np.save(os.path.join(config.model_save_path, f"{cls}.word2vec.npy"))

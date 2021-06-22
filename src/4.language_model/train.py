@@ -1,6 +1,6 @@
 import argparse
 import torch
-import numpy as np
+from src import config
 import os
 from tqdm import tqdm
 from torch import nn, optim
@@ -63,4 +63,4 @@ if __name__ == '__main__':
     save_folder = os.path.join(save_path)
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
-    torch.save(model.state_dict(), os.path.join(save_folder, f"{args.char}.pth"))
+    torch.save(model.state_dict(), os.path.join(config.model_save_path, f"{args.char}.language_model.pth"))

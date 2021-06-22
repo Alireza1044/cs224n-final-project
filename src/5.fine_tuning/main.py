@@ -1,36 +1,106 @@
-import torch.cuda
-from transformers import BertTokenizer, BertTokenizerFast, BertForMaskedLM, Trainer, TrainingArguments
-from datasets import load_dataset, load_metric
-from sklearn.model_selection import train_test_split
+from datasets import load_dataset
+from transformers import AutoModelForCausalLM
+import math
+import torch
+from transformers import pipeline
+from transformers import Trainer, TrainingArguments
+from transformers import AutoTokenizer
+from src import config
+import argparse
 
-# raw_datasets = load_dataset("imdb")
-metric = load_metric('accuracy')
+
+def load_data(char):
+    data_files = {}
+    train_file = config.data_path(char)
+    if train_file is not None:
+        data_files["train"] = train_file
+    extension = train_file.split(".")[-1]
+    if extension == "txt":
+        extension = "text"
+    datasets = load_dataset(extension, data_files=data_files)
+    datasets.train_test_split(test_size=0.1, train_size=0.9)
+    return datasets
+
 
 def tokenize_function(examples):
-    t = tokenizer(examples, padding=True, truncation=True, return_tensors="pt")
-    return t
+    return tokenizer(examples["text"])
+
+
+def group_texts(examples):
+    # Concatenate all texts.
+    concatenated_examples = {k: sum(examples[k], []) for k in examples.keys()}
+    total_length = len(concatenated_examples[list(examples.keys())[0]])
+    # We drop the small remainder, we could add padding if the model supported it instead of this drop, you can
+    # customize this part to your needs.
+    total_length = (total_length // block_size) * block_size
+    # Split by chunks of max_len.
+    result = {
+        k: [t[i: i + block_size] for i in range(0, total_length, block_size)]
+        for k, t in concatenated_examples.items()
+    }
+    result["labels"] = result["input_ids"].copy()
+    return result
 
 
 if __name__ == '__main__':
-    tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased", return_offsets_mapping=True)
-    data = []
-    with open('../../data/clean/cleaned_broken_sentences/michael.txt', 'r') as f:
-        data = [l.strip() for l in f.readlines()]
-    # max_len = max([len(d) for d in data])
-    # tokenized_datasets = [tokenize_function(d) for d in data]
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    print(f"Trainer is using {device}")
+    parser = argparse.ArgumentParser()
 
-    train_set, test_set = train_test_split(data, test_size=0.2, train_size=0.8)
-    test_set, validation_set = train_test_split(test_set, test_size=0.5, train_size=0.5)
-    train_set = tokenize_function(train_set).to(device)
-    test_set = tokenize_function(test_set).to(device)
-    validation_set = tokenize_function(validation_set).to(device)
+    parser.add_argument('--char', type=str, default="michael")
+    parser.add_argument('--predict', action='store_true')
+    parser.add_argument('--text', type=str, default="hi")
+    parser.add_argument('--length', type=int, default=10)
+    args = parser.parse_args()
 
-    model = BertForMaskedLM.from_pretrained('bert-base-uncased')
-    model.to(device)
+    if not args.predict:
+        datasets = load_data(args.char)
+        model_checkpoint = "distilgpt2"
 
-    training_args = TrainingArguments("test_trainer", evaluation_strategy='epoch')
+        tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, use_fast=True)
 
-    trainer = Trainer(model=model, args=training_args, train_dataset=train_set, eval_dataset=validation_set)
-    trainer.train()
+        tokenized_datasets = datasets.map(tokenize_function, batched=True, num_proc=4, remove_columns=["text"])
+        block_size = 128
+
+        lm_datasets = tokenized_datasets.map(
+            group_texts,
+            batched=True,
+            batch_size=1000,
+            num_proc=4,
+        )
+
+        model = AutoModelForCausalLM.from_pretrained(model_checkpoint)
+
+        training_args = TrainingArguments(
+            "test-clm",
+            evaluation_strategy="epoch",
+            learning_rate=2e-5,
+            weight_decay=0.01,
+            num_train_epochs=10
+        )
+
+        trainer = Trainer(
+            model=model,
+            args=training_args,
+            train_dataset=lm_datasets["train"],
+            eval_dataset=lm_datasets["test"],
+        )
+
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        print(f"Training is using:\n\t{device}")
+
+        model.to(device)
+        trainer.train()
+
+        eval_results = trainer.evaluate()
+        print(f"Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
+
+        model_name = f"{args.char}_bert_lm"
+        model.push_to_hub(model_name)
+        tokenizer.push_to_hub(model_name)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(f"{args.char}_bert_lm")
+        tokenizer = AutoTokenizer.from_pretrained(f"{args.char}_bert_lm", use_fast=True)
+        device = 0 if torch.cuda.is_available() else -1
+        text_generation = pipeline("text-generation", model=model, tokenizer=tokenizer, device=device)
+
+        prefix_text = args.text
+        text_generation(prefix_text, max_length=args.length)

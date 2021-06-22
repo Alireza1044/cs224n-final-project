@@ -2,6 +2,7 @@ import os
 import argparse
 import torch
 import numpy as np
+from src import config
 from tqdm import tqdm
 from torch import nn, optim
 from torch.utils.data import DataLoader
@@ -39,5 +40,5 @@ if __name__ == '__main__':
     print(f"Using: {device}")
     dataset = Dataset(args, device)
     model = Model(dataset, device)
-    model.load_state_dict(torch.load(os.path.join("tmp", f"{args.char}.pth")))
+    model.load_state_dict(torch.load(os.path.join(config.model_save_path, f"{args.char}.language_model.pth")))
     print(' '.join(predict(dataset, model, text=args.input, next_words=args.length)))

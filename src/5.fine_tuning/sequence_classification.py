@@ -6,6 +6,7 @@ import numpy as np
 from datasets import load_metric
 from transformers import AutoTokenizer
 from datasets import Dataset
+from src import config
 
 
 def tokenize_function(examples):
@@ -19,10 +20,10 @@ def compute_metrics(eval_pred):
 
 
 def load_data():
-    with open(f'michael.txt', 'r') as f:
+    with open(config.data_path('michael'), 'r') as f:
         data = [d.strip() for d in f.readlines()]
 
-    with open(f'dwight.txt', 'r') as f:
+    with open(config.data_path('dwight'), 'r') as f:
         data2 = [d.strip() for d in f.readlines()]
 
     dct = {"text": data + data2, "label": [0] * len(data) + [1] * len(data2)}
@@ -43,8 +44,10 @@ if __name__ == '__main__':
     full_train_dataset = tokenized_datasets["train"].shuffle()
     full_eval_dataset = tokenized_datasets["test"].shuffle()
     metric = load_metric("accuracy")
-    if torch.cuda.is_available():
-        model.to(torch.device('cuda'))
+
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+    print(f"Training is using:\n\t{device}")
 
     trainer = Trainer(
         model=model,
@@ -55,3 +58,7 @@ if __name__ == '__main__':
     )
 
     trainer.train()
+
+    model_name = "bert_classification_lm"
+    model.push_to_hub(model_name)
+    tokenizer.push_to_hub(model_name)
