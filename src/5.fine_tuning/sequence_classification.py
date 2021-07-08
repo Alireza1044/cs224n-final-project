@@ -3,10 +3,12 @@ from transformers import Trainer
 from transformers import AutoModelForSequenceClassification
 from transformers import TrainingArguments
 import numpy as np
+import os, sys
 from datasets import load_metric
 from transformers import AutoTokenizer
 from datasets import Dataset
-from src import config
+sys.path.append("..")
+import config
 
 
 def tokenize_function(examples):
