@@ -5,7 +5,9 @@ import torch
 from transformers import pipeline
 from transformers import Trainer, TrainingArguments
 from transformers import AutoTokenizer
-from src import config
+import sys
+sys.path.append("..")
+import config
 import argparse
 
 
@@ -17,9 +19,9 @@ def load_data(char):
     extension = train_file.split(".")[-1]
     if extension == "txt":
         extension = "text"
-    datasets = load_dataset(extension, data_files=data_files)
-    datasets.train_test_split(test_size=0.1, train_size=0.9)
-    return datasets
+    dataset = load_dataset(extension, data_files=data_files)['train']
+    dataset = dataset.train_test_split(test_size=0.1, train_size=0.9)
+    return dataset
 
 
 def tokenize_function(examples):
@@ -71,7 +73,6 @@ if __name__ == '__main__':
 
         training_args = TrainingArguments(
             "test-clm",
-            evaluation_strategy="epoch",
             learning_rate=2e-5,
             weight_decay=0.01,
             num_train_epochs=10
@@ -94,8 +95,8 @@ if __name__ == '__main__':
         print(f"Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
 
         model_name = f"{args.char}_bert_lm"
-        model.push_to_hub(model_name)
-        tokenizer.push_to_hub(model_name)
+        model.push_to_hub(model_name,use_temp_dir=True)
+        tokenizer.push_to_hub(model_name,use_temp_dir=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(f"{args.char}_bert_lm")
         tokenizer = AutoTokenizer.from_pretrained(f"{args.char}_bert_lm", use_fast=True)

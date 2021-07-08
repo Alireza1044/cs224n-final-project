@@ -6,10 +6,8 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from model import Model
 from dataset import Dataset
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-from src import config
+sys.path.append("..")
+import config
 
 def train(dataset, model, device, args):
     model.train()
@@ -56,7 +54,7 @@ if __name__ == '__main__':
         device = torch.device('cpu')
     print(f"Training is using: \n \t {device}")
     print()
-    dataset = Dataset(args, device)
+    dataset = Dataset(args, device, os.path.join(config.data_path(args.char)))
     model = Model(dataset, device)
     model.to(device)
 

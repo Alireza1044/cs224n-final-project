@@ -8,9 +8,11 @@ class Dataset(torch.utils.data.Dataset):
             self,
             args,
             device,
+            path,
     ):
         self.args = args
         self.device = device
+        self.path = path
         self.char = args.char
         self.words = self.load_words()
         self.uniq_words = self.get_uniq_words()
@@ -21,7 +23,7 @@ class Dataset(torch.utils.data.Dataset):
         self.words_indexes = [self.word_to_index[w] for w in self.words]
 
     def load_words(self):
-        with open(f'{self.char}.txt', 'r') as f:
+        with open(self.path, 'r') as f:
             train_df = [d.strip() for d in f.readlines()]
         temp = ' '.join(train_df)
         return temp.split()

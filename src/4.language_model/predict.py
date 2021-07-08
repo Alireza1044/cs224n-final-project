@@ -1,13 +1,14 @@
-import os
+import os, sys
 import argparse
 import torch
 import numpy as np
-from src import config
 from tqdm import tqdm
 from torch import nn, optim
 from torch.utils.data import DataLoader
 from model import Model
 from dataset import Dataset
+sys.path.append("..")
+import config
 
 
 def predict(dataset, model, text, next_words=100):
@@ -38,7 +39,8 @@ if __name__ == '__main__':
     device = torch.device('cpu')
 
     print(f"Using: {device}")
-    dataset = Dataset(args, device)
+    path = os.path.join(config.model_save_path, f"{args.char}.language_model.pth")
+    dataset = Dataset(args, device, os.path.join(config.data_path(args.char)))
     model = Model(dataset, device)
-    model.load_state_dict(torch.load(os.path.join(config.model_save_path, f"{args.char}.language_model.pth")))
+    model.load_state_dict(torch.load(os.path.join(path)))
     print(' '.join(predict(dataset, model, text=args.input, next_words=args.length)))
