@@ -11,17 +11,13 @@ import time
 import os, sys, inspect
 import argparse
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-from src import config
+sys.path.append("..")
+import config
 
 from word2vec import *
 from sgd import *
 
 # Check Python Version
-import sys
-
 assert sys.version_info[0] == 3
 assert sys.version_info[1] >= 5
 
