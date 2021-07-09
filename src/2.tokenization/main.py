@@ -43,17 +43,12 @@ def load_data(char, flag):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--predict', action='store_true')
-    parser.add_argument('-f', '--whole-data', action='store_true')
-    parser.add_argument('--char', type=str, default="michael")
     parser.add_argument('--vocab-size', type=int, default=[50, 150, 500, 1000, 1500])
     args = parser.parse_args()
-        # if args.whole_data:
-        #     files = f"{config.data_path('michael_train')},{config.data_path('dwight_train')}"
-        # else:
-        #     files = config.data_path(f"{args.char}_train")
+    prev_unk = float("inf")
     with open(os.path.join(config.log_path, "tokenization.log"), "w") as f:
         f.write("\n")
-    for vocab_size in args.vocab_size:
+    for i, vocab_size in enumerate(args.vocab_size):
         unk_avg = 0.0
         for iter in range(5):
             train_file, test_file = merge_data()
@@ -79,5 +74,13 @@ if __name__ == '__main__':
                 f.write(f"vocab size = {vocab_size}, iter {iter} unk% = {(unk / float(count)) * 100}%\n")
             unk_avg += ((unk / float(count)) * 100)
         unk_avg /= 5
+        if unk_avg < prev_unk:
+            prev_unk = unk_avg
+            if i > 0:
+                os.remove(os.path.join(config.model_save_path, f'{args.vocab_size[i - 1]}.tokenization.model'))
+                os.remove(os.path.join(config.model_save_path, f'{args.vocab_size[i - 1]}.tokenization.vocab'))
+        else:
+            os.remove(os.path.join(config.model_save_path, f'{args.vocab_size[i]}.tokenization.model'))
+            os.remove(os.path.join(config.model_save_path, f'{args.vocab_size[i]}.tokenization.vocab'))
         with open(os.path.join(config.log_path, "tokenization.log"), "a") as f:
             f.write(f"vocab size = {vocab_size} unk% average = {unk_avg}\n")

@@ -6,6 +6,7 @@ from transformers import pipeline
 from transformers import Trainer, TrainingArguments
 from transformers import AutoTokenizer
 import sys
+
 sys.path.append("..")
 import config
 import argparse
@@ -95,11 +96,11 @@ if __name__ == '__main__':
         print(f"Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
 
         model_name = f"{args.char}_bert_lm"
-        model.push_to_hub(model_name,use_temp_dir=True)
-        tokenizer.push_to_hub(model_name,use_temp_dir=True)
+        model.push_to_hub(model_name, use_temp_dir=True)
+        tokenizer.push_to_hub(model_name, use_temp_dir=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(f"{args.char}_bert_lm")
-        tokenizer = AutoTokenizer.from_pretrained(f"{args.char}_bert_lm", use_fast=True)
+        model = AutoModelForCausalLM.from_pretrained(f"Alireza1044/{args.char}_bert_lm")
+        tokenizer = AutoTokenizer.from_pretrained(f"Alireza1044/{args.char}_bert_lm", use_fast=True)
         device = 0 if torch.cuda.is_available() else -1
         text_generation = pipeline("text-generation", model=model, tokenizer=tokenizer, device=device)
 

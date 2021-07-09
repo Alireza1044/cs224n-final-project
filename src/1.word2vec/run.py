@@ -24,13 +24,13 @@ assert sys.version_info[1] >= 5
 # Reset the random seed to make sure that everyone gets the same results
 parser = argparse.ArgumentParser(description="1.word2vec arguments")
 parser.add_argument('--char', type=str, default="michael")
-parser.add_argument('-a', action="store_true")
+parser.add_argument('--all', action="store_true")
 parser.add_argument('--predict', action="store_true")
 args = parser.parse_args()
 cls = args.char
 print(f"training for: {cls}")
 random.seed(314)
-dataset = StanfordSentiment(character=cls)
+dataset = StanfordSentiment(character=cls, path=config.data_path(cls))
 tokens = dataset.tokens()
 nWords = len(tokens)
 
@@ -43,7 +43,7 @@ C = 5
 # Reset the random seed to make sure that everyone gets the same results
 random.seed(31415)
 np.random.seed(9265)
-c = 'all' if args.a else args.char
+c = 'all' if args.all else args.char
 startTime = time.time()
 wordVectors = np.concatenate(
     ((np.random.rand(nWords, dimVectors) - 0.5) /
