@@ -105,4 +105,4 @@ if __name__ == '__main__':
         text_generation = pipeline("text-generation", model=model, tokenizer=tokenizer, device=device)
 
         prefix_text = args.text
-        text_generation(prefix_text, max_length=args.length)
+        print(text_generation(prefix_text, max_length=args.length)[0]['generated_text'])
