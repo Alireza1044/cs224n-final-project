@@ -9,6 +9,7 @@ Haoshen Hong <haoshen@stanford.edu>
 from datetime import datetime
 import os
 import pickle
+import sys
 import math
 import time
 import argparse
@@ -20,9 +21,13 @@ from tqdm import tqdm
 from parser_model import ParserModel
 from utils.parser_utils import minibatches, load_and_preprocess_data, AverageMeter
 
+sys.path.append("..")
+import config
+
 parser = argparse.ArgumentParser(description='Train neural dependency parser in pytorch')
-parser.add_argument('-d', '--debug', action='store_true', help='whether to enter debug mode')
+parser.add_argument('-p', '--predict', action='store_true', help='whether to enter debug mode')
 args = parser.parse_args()
+
 
 # -----------------
 # Primary Functions
@@ -39,7 +44,6 @@ def train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=1
     @param lr (float): Learning rate
     """
     best_dev_UAS = 0
-
 
     ### YOUR CODE HERE (~2-7 lines)
     ### TODO:
@@ -84,14 +88,14 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_si
 
     @return dev_UAS (float): Unlabeled Attachment Score (UAS) for dev data
     """
-    parser.model.train() # Places model in "train" mode, i.e. apply dropout layer
+    parser.model.train()  # Places model in "train" mode, i.e. apply dropout layer
     n_minibatches = math.ceil(len(train_data) / batch_size)
     loss_meter = AverageMeter()
 
     with tqdm(total=(n_minibatches)) as prog:
         for i, (train_x, train_y) in enumerate(minibatches(train_data, batch_size)):
-            optimizer.zero_grad()   # remove any baggage in the optimizer
-            loss = 0. # store loss for this batch here
+            optimizer.zero_grad()  # remove any baggage in the optimizer
+            loss = 0.  # store loss for this batch here
             train_x = torch.from_numpy(train_x).long()
             train_y = torch.from_numpy(train_y.nonzero()[1]).long()
 
@@ -116,24 +120,23 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_si
             prog.update(1)
             loss_meter.update(loss.item())
 
-    print ("Average Train Loss: {}".format(loss_meter.avg))
+    print("Average Train Loss: {}".format(loss_meter.avg))
 
-    print("Evaluating on dev set",)
-    parser.model.eval() # Places model in "eval" mode, i.e. don't apply dropout layer
+    print("Evaluating on dev set", )
+    parser.model.eval()  # Places model in "eval" mode, i.e. don't apply dropout layer
     dev_UAS, _ = parser.parse(dev_data)
     print("- dev UAS: {:.2f}".format(dev_UAS * 100.0))
     return dev_UAS
 
 
 if __name__ == "__main__":
-    debug = args.debug
-    # debug = True
+    predict = args.predict
     assert (torch.__version__.split(".") >= ["1", "0", "0"]), "Please install torch version >= 1.0.0"
 
     print(80 * "=")
     print("INITIALIZING")
     print(80 * "=")
-    parser, embeddings, train_data, dev_data, test_data = load_and_preprocess_data(debug)
+    parser, embeddings, train_data, dev_data, test_data = load_and_preprocess_data(False)
 
     start = time.time()
     model = ParserModel(embeddings)
@@ -143,23 +146,23 @@ if __name__ == "__main__":
     print(80 * "=")
     print("TRAINING")
     print(80 * "=")
-    output_dir = "results/{:%Y%m%d_%H%M%S}/".format(datetime.now())
-    output_dir = "results/20210620_132356/"
-    output_path = output_dir + "model.weights"
+    output_path = os.path.join(config.model_save_path, "parsing.weights")
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if not os.path.exists(config.model_save_path):
+        os.makedirs(config.model_save_path)
+    if not predict:
+        train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=10, lr=0.0005)
 
-    # train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=10, lr=0.0005)
-
-    if not debug:
-        print(80 * "=")
-        print("TESTING")
-        print(80 * "=")
-        print("Restoring the best model weights found on the dev set")
-        parser.model.load_state_dict(torch.load(output_path))
-        print("Final evaluation on test set",)
-        parser.model.eval()
-        UAS, dependencies = parser.parse(test_data)
-        print("- test UAS: {:.2f}".format(UAS * 100.0))
-        print("Done!")
+    print(80 * "=")
+    print("TESTING")
+    print(80 * "=")
+    print("Restoring the best model weights found on the dev set")
+    parser.model.load_state_dict(torch.load(output_path))
+    print("Final evaluation on test set", )
+    parser.model.eval()
+    UAS, dependencies = parser.parse(test_data)
+    with open(os.path.join(config.log_path, "parsing.log"),"w") as f:
+        [f.write(f"{d}\n") for d in dependencies]
+        f.write("- test UAS: {:.2f}".format(UAS * 100.0))
+    print("- test UAS: {:.2f}".format(UAS * 100.0))
+    print("Done!")

@@ -60,5 +60,9 @@ if __name__ == '__main__':
     trainer.train()
 
     model_name = "bert_classification_lm"
-    model.push_to_hub(model_name)
-    tokenizer.push_to_hub(model_name)
+    try:
+        model.push_to_hub(model_name, use_temp_dir=True)
+        tokenizer.push_to_hub(model_name, use_temp_dir=True)
+    except:
+        pass
+    model.save_pretrained(model_name)
