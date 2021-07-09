@@ -1,0 +1,31 @@
+
+vocab size = 50, iter 0 unk% = 0.046468974762823176%
+vocab size = 50, iter 1 unk% = 0.04767361140152054%
+vocab size = 50, iter 2 unk% = 0.02831350020517029%
+vocab size = 50, iter 3 unk% = 0.048366893894609776%
+vocab size = 50, iter 4 unk% = 0.055055055055055056%
+vocab size = 50 unk% average = 0.04517560706383576
+vocab size = 150, iter 0 unk% = 0.07577303062979046%
+vocab size = 150, iter 1 unk% = 0.07369358063245145%
+vocab size = 150, iter 2 unk% = 0.07793730694428555%
+vocab size = 150, iter 3 unk% = 0.07845508266574536%
+vocab size = 150, iter 4 unk% = 0.04766172976510592%
+vocab size = 150 unk% average = 0.07070414612747575
+vocab size = 500, iter 0 unk% = 0.07315213583630407%
+vocab size = 500, iter 1 unk% = 0.11029222285213627%
+vocab size = 500, iter 2 unk% = 0.07414119779223989%
+vocab size = 500, iter 3 unk% = 0.11934893100397144%
+vocab size = 500, iter 4 unk% = 0.11127367141296957%
+vocab size = 500 unk% average = 0.09764163177952424
+vocab size = 1000, iter 0 unk% = 0.12388294865472739%
+vocab size = 1000, iter 1 unk% = 0.12378299888119212%
+vocab size = 1000, iter 2 unk% = 0.14291158536585366%
+vocab size = 1000, iter 3 unk% = 0.14309051667600728%
+vocab size = 1000, iter 4 unk% = 0.1086009571205232%
+vocab size = 1000 unk% average = 0.12845380133966072
+vocab size = 1500, iter 0 unk% = 0.11044731161202871%
+vocab size = 1500, iter 1 unk% = 0.15024683408456752%
+vocab size = 1500, iter 2 unk% = 0.1194232485637783%
+vocab size = 1500, iter 3 unk% = 0.13733667645242983%
+vocab size = 1500, iter 4 unk% = 0.13266251157668144%
+vocab size = 1500 unk% average = 0.13002331645789716
