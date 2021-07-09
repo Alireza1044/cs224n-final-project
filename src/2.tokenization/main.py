@@ -70,7 +70,7 @@ if __name__ == '__main__':
             print(f"vocab size = {vocab_size}, iter {iter} unk% = {(unk / float(count)) * 100}%")
             print(80 * "=")
             print()
-            with open(os.path.join(config.log_path, "tokenization.log"), "a") as f:
+            with open(os.path.join(config.report_path, "tokenization.txt"), "a") as f:
                 f.write(f"vocab size = {vocab_size}, iter {iter} unk% = {(unk / float(count)) * 100}%\n")
             unk_avg += ((unk / float(count)) * 100)
         unk_avg /= 5
@@ -82,5 +82,5 @@ if __name__ == '__main__':
         else:
             os.remove(os.path.join(config.model_save_path, f'{args.vocab_size[i]}.tokenization.model'))
             os.remove(os.path.join(config.model_save_path, f'{args.vocab_size[i]}.tokenization.vocab'))
-        with open(os.path.join(config.log_path, "tokenization.log"), "a") as f:
+        with open(os.path.join(config.report_path, "tokenization.txt"), "a") as f:
             f.write(f"vocab size = {vocab_size} unk% average = {unk_avg}\n")
